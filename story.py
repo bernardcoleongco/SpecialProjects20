@@ -11,8 +11,11 @@ def read_tsv():
 
 	tsv_file.close()
 
+def read_user_input():
+	user_input = input()
+
 def main():
 	read_tsv()
-	user_input = input()
+	read_user_input()
 
 main()
