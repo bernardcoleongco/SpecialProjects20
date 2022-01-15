@@ -13,5 +13,6 @@ def read_tsv():
 
 def main():
 	read_tsv()
+	user_input = input()
 
 main()
