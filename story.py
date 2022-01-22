@@ -27,6 +27,8 @@ def read_tsv():
 	  	next_choices_dict[story] = choice
 
 	  stories[story] = prompt
+	
+	tsv_file.close()
 
 def read_user_input():
 	user_input = input()
