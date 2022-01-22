@@ -1,13 +1,26 @@
 import csv
 
 def read_tsv():
-	# read tsv and print rows
-
+	prev_choices_dict = {}
+	next_choices_dict = {}
+	stories = {}
+	
+	# read tsv and store rows
 	tsv_file = open("story.tsv")
 	read_tsv = csv.reader(tsv_file, delimiter="\t")
 
 	for row in read_tsv:
-	  print(row)
+	  prev_choices = row[0]
+	  story = row[1]
+	  prompt = row[2]
+	  next_choices = row[3]
+	  for choice in prev_choices.split(','):
+	  	if '0' not in choice:
+	  		choice = '0.' + choice
+	  	prev_choices_dict[story] = choice
+	  for choice in next_choices.split(','):
+	  	next_choices_dict[story] = choice
+	  stories[story] = prompt
 
 	tsv_file.close()
 
