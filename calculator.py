@@ -52,7 +52,11 @@ def get_amount():
  
 def get_date():
     today = date.today()
+ 
     transaction_date = input("Date of transaction as dd/mm/yyyy? (Hit enter to default to today's date) ")
+    if not len(transaction_date):
+        transaction_data.update({"date": today.strftime("%d/%m/%Y")})
+        return
     day, month, year = transaction_date.split("/")
  
     # validate
@@ -66,12 +70,28 @@ def get_date():
    
     if transaction_date <= today:
         transaction_data.update({"date": transaction_date.strftime("%d/%m/%Y")})
+   
+ 
+def get_confirmation():
+    valid_yes = ["yes", "y"]
+    valid_no = ["no", "n"]
+    confirm = input("Do you confirm the recording of this entry? (y/n)")
+   
+    if confirm in valid_yes:
+        return confirm in valid_yes
+    elif confirm in valid_no:
+        return confirm in valid_yes
+    else:
+        get_confirmation()
+       
  
 def main():
     income, expense = get_transaction_type()
     get_source_reason(income, expense)
     get_amount()
     get_date()
+    confirm = get_confirmation()
+    # TODO: put transaction_data into database
     print(transaction_data)
  
 main()
