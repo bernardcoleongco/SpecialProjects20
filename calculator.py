@@ -92,7 +92,6 @@ def tables_exist():
 
 def create_tables():
     global connection, cursor
-    connect("./income_and_expense.db")
  
     if not tables_exist():
         cursor.execute("""CREATE TABLE IF NOT EXISTS income (source varchar, amount float, date varchar)""")
@@ -122,7 +121,6 @@ def connect(path):
  
 def income_insertion():
     global connection, cursor
-    connect("./income_and_expense.db")
  
     cursor.execute("""SELECT count(*) FROM income;""")
     before = cursor.fetchone()[0]
@@ -147,7 +145,6 @@ def income_insertion():
  
 def expenses_insertion():
     global connection, cursor
-    connect("./income_and_expense.db")
  
     cursor.execute("""SELECT count(*) FROM expenses;""")
     before = cursor.fetchone()[0]
@@ -167,12 +164,10 @@ def expenses_insertion():
     print("Successfully added new expense: " + str(toPrintExpense))
  
     connection.commit()
- 
- 
+
 def get_total_income():
     # sums up total income from database
     global connection, cursor
-    connect("./income_and_expense.db")
     cursor.execute("""SELECT SUM(amount) FROM income;""")
     total_income = cursor.fetchall()[0][0]
     if total_income:
@@ -180,11 +175,11 @@ def get_total_income():
     else:
         print("No income yet!")
     sleep(2.5) # allow time to read the above
+    return total_income
  
 def get_total_expenses():
-    # sums up total income from database
+    # sums up total expenses from database
     global connection, cursor
-    connect("./income_and_expense.db")
     cursor.execute("""SELECT SUM(amount) FROM expenses;""")
     total_expenses = cursor.fetchall()[0][0]
     if total_expenses:
@@ -192,7 +187,48 @@ def get_total_expenses():
     else:
         print("No expenses yet!")
     sleep(2.5) # allow time to read the above
- 
+    return total_expenses
+
+def get_networth():
+    income = get_total_income()
+    expenses = get_total_expenses()
+    if income and expenses:
+        print("Your networth: $" + str(income-expenses))
+    elif income and not expenses:
+        print("Your networth: $" + str(income))
+    elif not income and expenses:
+        print("Your networth: $" + str(expenses))
+    else:
+        print("You don't have any income or expenses recorded yet! Please record some first!")
+    
+    sleep(2.5) # allow time to read the above
+
+def get_income_by_source():
+    global connection, cursor
+    cursor.execute("""SELECT SUM(amount), source FROM income GROUP BY source;""")
+    income_list = cursor.fetchall()
+    for i in income_list:
+        amount = i[0]
+        source = i[1]
+        print("Total Amount: " + str(amount) + " | Source: " + str(source))
+
+    sleep(2.5) # allow time to read the above
+
+def get_expenses_by_reason():
+    global connection, cursor
+    cursor.execute("""SELECT SUM(amount), reason FROM expenses GROUP BY reason;""")
+    expenses_list = cursor.fetchall()
+    for i in expenses_list:
+        amount = i[0]
+        reason = i[1]
+        print("Total Amount: " + str(amount) + " | Reason: " + str(reason))
+
+    sleep(2.5) # allow time to read the above
+
+def breakdown_by_month_or_year():
+    # TODO: implement
+    return
+
 def processTransaction():
     # database init
     create_tables()
@@ -214,17 +250,38 @@ def processTransaction():
             expenses_insertion()
     else:
         print("Transaction cancelled, data not saved.")
- 
-    connection.close()
 
     sleep(2.5) # allow time to read any closing messages
 
     main()
- 
+
+def show_all_income():
+    global connection, cursor
+
+    cursor.execute("""SELECT * FROM income;""")
+    entries = cursor.fetchall()
+    print("Income: ")
+    for i in entries:
+        source = i[0]
+        amount = i[1]
+        date = i[2]
+        print("Source: " + source, "Amount: " + str(amount), "Date: " + date)
+
+def show_all_expenses():
+    global connection, cursor
+
+    cursor.execute("""SELECT * FROM expenses;""")
+    entries = cursor.fetchall()
+    for i in entries:
+        reason = i[0]
+        amount = i[1]
+        date = i[2]
+        print("Reason: " + reason, "Amount: " + str(amount), "Date: " + date)
+
 def main():
     global connection, cursor
     connect("./income_and_expense.db")
-   
+
     request = input("Do you want to see your #1 existing income and expenses or #2 input new income or expenses? (1 or 2) \nClick any other key to quit.\n")
  
     if request == "1":
@@ -234,31 +291,31 @@ def main():
             main()
  
         # show income
-        cursor.execute("""SELECT * FROM income;""")
-        entries = cursor.fetchall()
-        print("Income: ")
-        for i in entries:
-            source = i[0]
-            amount = i[1]
-            date = i[2]
-            print("Source: " + source, "Amount: " + str(amount), "Date: " + date)
+        show_all_income()
         get_total_income()
        
         # show expenses
-        cursor.execute("""SELECT * FROM expenses;""")
-        entries = cursor.fetchall()
-        for i in entries:
-            reason = i[0]
-            amount = i[1]
-            date = i[2]
-            print("Reason: " + reason, "Amount: " + str(amount), "Date: " + date)
+        show_all_expenses()
         get_total_expenses()
+
+        specifics = input("Do you want to see #1 your networth, #2 income by source, #3 expenses by reason, #4 breakdown by month/year?\n")
+
+        if specifics == "1":
+            get_networth()
+        elif specifics == "2":
+            get_income_by_source()
+        elif specifics == "3":
+            get_expenses_by_reason()
+        elif specifics == "4":
+            breakdown_by_month_or_year()
+
         main()
    
     elif request == "2":
         processTransaction()
    
     else:
+        connection.close()
         exit()
  
 main()
