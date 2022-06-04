@@ -197,7 +197,7 @@ def get_networth():
     elif income and not expenses:
         print("Your networth: $" + str(income))
     elif not income and expenses:
-        print("Your networth: $" + str(expenses))
+        print("Your networth: -$" + str(expenses))
     else:
         print("You don't have any income or expenses recorded yet! Please record some first!")
     
@@ -225,9 +225,174 @@ def get_expenses_by_reason():
 
     sleep(2.5) # allow time to read the above
 
+def by_month():
+	global connection, cursor
+	by_month = {}
+	cursor.execute("""SELECT SUBSTR(date,4,2) as month, SUM(amount) FROM income GROUP BY month;""")
+	income_by_month = cursor.fetchall()
+	print("Income Breakdown by Month")
+	for i in income_by_month:
+		month = i[0]
+		amount = i[1]
+		by_month[month] = amount
+		print("Month: " + str(month) + " Total Income: $" + str(amount))
+
+	sleep(2.5) # allow time to read the above
+
+	more = input("See further income breakdown by source? (y/n)\n")
+	if more == "y":
+		by_source = {}
+		cursor.execute("""SELECT SUBSTR(date,4,2) as month, source, SUM(amount) FROM income GROUP BY month, source;""")
+		income_by_month_source = cursor.fetchall()
+		for s in income_by_month_source:
+			month = s[0]
+			source = s[1]
+			amount = s[2]
+			if month in by_source.keys():
+				if source in by_source[month].keys():
+					by_source[month][source] = by_source[month][source] + amount
+				else:
+					by_source[month][source] = amount
+			else:
+				by_source[month] = {source: amount}
+		
+		for m in by_source:
+			print("Month: " + str(m))
+			for s in by_source[m]:
+				print("Source: " + str(s) + " Total Income: " + str(by_source[m][s]))
+
+	sleep(2.5) # allow time to read the above
+
+	cursor.execute("""SELECT SUBSTR(date,4,2) as month, SUM(amount) FROM expenses GROUP BY month;""")
+	expenses_by_month = cursor.fetchall()
+	print("Expenses Breakdown by Month")
+	for e in expenses_by_month:
+		month = e[0]
+		amount = e[1]
+		if month in by_month.keys():
+			by_month[month] = by_month[month] - amount
+		else:
+			by_month[month] = 0-amount
+		print("Month: " + str(month) + " Total Expenses: $" + str(amount))
+
+	sleep(2.5) # allow time to read the above
+
+	more = input("See further expenses breakdown by reason? (y/n)\n")
+	if more == "y":
+		by_reason = {}
+		cursor.execute("""SELECT SUBSTR(date,4,2) as month, reason, SUM(amount) FROM expenses GROUP BY month, reason;""")
+		expenses_by_month_reason = cursor.fetchall()
+		for r in expenses_by_month_reason:
+			month = r[0]
+			reason = r[1]
+			amount = r[2]
+			if month in by_reason.keys():
+				if reason in by_reason[month].keys():
+					by_reason[month][reason] = by_reason[month][reason] + amount
+				else:
+					by_reason[month][reason] = amount
+			else:
+				by_reason[month] = {reason: amount}
+		
+		for m in by_reason:
+			print("Month: " + str(m))
+			for r in by_reason[m]:
+				print("Reason: " + str(r) + " Total Expenses: " + str(by_reason[m][r]))
+				
+	sleep(2.5) # allow time to read the above
+
+	for m in by_month:
+		print("Month: " + str(m) + " Networth: $" + str(by_month[m]))
+
+	sleep(2.5) # allow time to read the above
+
+def by_year():
+	global connection, cursor
+	by_month = {}
+	cursor.execute("""SELECT SUBSTR(date,7,4) as year, SUM(amount) FROM income GROUP BY year;""")
+	income_by_month = cursor.fetchall()
+	print("Income Breakdown by Year")
+	for i in income_by_month:
+		month = i[0]
+		amount = i[1]
+		by_month[month] = amount
+		print("Year: " + str(month) + " Total Income: $" + str(amount))
+
+	sleep(2.5) # allow time to read the above
+
+	more = input("See further income breakdown by source? (y/n)\n")
+	if more == "y":
+		by_source = {}
+		cursor.execute("""SELECT SUBSTR(date,7,4) as year, source, SUM(amount) FROM income GROUP BY year, source;""")
+		income_by_month_source = cursor.fetchall()
+		for s in income_by_month_source:
+			month = s[0]
+			source = s[1]
+			amount = s[2]
+			if month in by_source.keys():
+				if source in by_source[month].keys():
+					by_source[month][source] = by_source[month][source] + amount
+				else:
+					by_source[month][source] = amount
+			else:
+				by_source[month] = {source: amount}
+		
+		for m in by_source:
+			print("Year: " + str(m))
+			for s in by_source[m]:
+				print("Source: " + str(s) + " Total Income: " + str(by_source[m][s]))
+
+	sleep(2.5) # allow time to read the above
+
+	cursor.execute("""SELECT SUBSTR(date,7,4) as year, SUM(amount) FROM expenses GROUP BY year;""")
+	expenses_by_month = cursor.fetchall()
+	print("Expenses Breakdown by Year")
+	for e in expenses_by_month:
+		month = e[0]
+		amount = e[1]
+		if month in by_month.keys():
+			by_month[month] = by_month[month] - amount
+		else:
+			by_month[month] = 0-amount
+		print("Year: " + str(month) + " Total Expenses: $" + str(amount))
+
+	sleep(2.5) # allow time to read the above
+
+	more = input("See further expenses breakdown by reason? (y/n)\n")
+	if more == "y":
+		by_reason = {}
+		cursor.execute("""SELECT SUBSTR(date,7,4) as year, reason, SUM(amount) FROM expenses GROUP BY year, reason;""")
+		expenses_by_month_reason = cursor.fetchall()
+		for r in expenses_by_month_reason:
+			month = r[0]
+			reason = r[1]
+			amount = r[2]
+			if month in by_reason.keys():
+				if reason in by_reason[month].keys():
+					by_reason[month][reason] = by_reason[month][reason] + amount
+				else:
+					by_reason[month][reason] = amount
+			else:
+				by_reason[month] = {reason: amount}
+		
+		for m in by_reason:
+			print("Year: " + str(m))
+			for r in by_reason[m]:
+				print("Reason: " + str(r) + " Total Expenses: " + str(by_reason[m][r]))
+				
+	sleep(2.5) # allow time to read the above
+
+	for m in by_month:
+		print("Year: " + str(m) + " Networth: $" + str(by_month[m]))
+
+	sleep(2.5) # allow time to read the above
+
 def breakdown_by_month_or_year():
-    # TODO: implement
-    return
+    month_or_year = input("See breakdown by 1) month or 2) year?\n")
+    if month_or_year == "1":
+    	by_month()
+    elif month_or_year == "2":
+    	by_year()
 
 def processTransaction():
     # database init
